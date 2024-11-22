@@ -1,5 +1,24 @@
-body {
+/* Tailwind Base Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure full height for the body and HTML tags */
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%; /* Full height */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure the root element takes full height */
+#root {
+  height: 100%;
+}
+
+/* Apply font and basic styles */
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -7,6 +26,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Code font styles */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
