@@ -15,7 +15,7 @@ const Username = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/users/${user.username}`);
+        const response = await fetch(`http://164.92.101.175:3001/users/${user.username}`);
         const data = await response.json();
 
         // Set state with user data from the backend
@@ -34,7 +34,7 @@ const Username = () => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/users/${user.username}`, {
+      const response = await fetch(`http://164.92.101.175:3001/users/${user.username}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -12,12 +12,83 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+const redirectUri = 'http://164.92.101.175:3001/callback';
+console.log('Using Redirect URI:', redirectUri);
+
 // Connect to MongoDB
 connectDB();
 
 const processedCodes = new Set(); // Track used codes
+// server.js or app.js (Backend)
 app.post('/callback', async (req, res) => {
   const { code } = req.body;
+
+  if (!code) {
+    console.error('No authorization code provided');
+    return res.status(400).json({ error: 'Authorization code is missing.' });
+  }
+
+  try {
+    // Exchange code for access token
+    const tokenResponse = await axios.post(
+      'https://discord.com/api/oauth2/token',
+      new URLSearchParams({
+        client_id: DISCORD_CLIENT_ID,
+        client_secret: DISCORD_CLIENT_SECRET,
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: 'http://164.92.101.175:3001/callback',
+      }).toString(),
+      {
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+
+    // Fetch user data from Discord API
+    const userResponse = await axios.get('https://discord.com/api/users/@me', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const userData = userResponse.data;
+
+    // Optionally, save or update user data in your database
+    let user = await User.findOne({ discord_id: userData.id });
+
+    if (!user) {
+      // If the user does not exist, create a new one
+      user = new User({
+        discord_id: userData.id,
+        username: userData.username,
+        avatar: userData.avatar,
+        gear_score: 0, // Default values
+        primary_weapon: 'Fist',
+        secondary_weapon: 'Fist',
+        is_admin: false, // Set admin manually if needed
+      });
+
+      await user.save();
+      console.log('✅ New user created:', user);
+    } else {
+      console.log('✅ User exists:', user);
+    }
+
+    // Send user data back to frontend
+    res.json({
+      id: userData.id,
+      username: userData.username,
+      avatar: userData.avatar,
+      // Add any other necessary fields
+    });
+  } catch (error) {
+    console.error('Error during Discord OAuth flow:', error);
+    res.status(500).json({ error: 'Internal server error during authentication.' });
+  }
+});
+
+app.get('/callback', async (req, res) => {
+  const code = req.query.code; // Extract the 'code' parameter from the query string
 
   if (!code) {
     console.error('❌ No authorization code received.');
@@ -26,40 +97,58 @@ app.post('/callback', async (req, res) => {
 
   console.log('✅ Authorization code received:', code);
 
-  if (processedCodes.has(code)) {
-    console.warn('⚠️ Duplicate authorization code received:', code);
-    return res.status(400).json({ error: 'Authorization code has already been used.' });
-  }
-
   try {
-    console.log('⏳ Processing authorization code:', code);
-
     const params = new URLSearchParams({
       client_id: process.env.CLIENT_ID,
       client_secret: process.env.CLIENT_SECRET,
       grant_type: 'authorization_code',
       code,
-      redirect_uri: process.env.REDIRECT_URI,
+      redirect_uri: redirectUri, // Ensure this matches the redirect URI in your Discord app settings
     });
 
+    console.log('Redirect URI being used:', redirectUri);
+
+    // Exchange the code for an access token
     const tokenResponse = await axios.post(
       'https://discord.com/api/oauth2/token',
       params,
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
 
-    console.log('✅ Token response from Discord:', tokenResponse.data);
-
     const accessToken = tokenResponse.data.access_token;
+    console.log('✅ Token response:', tokenResponse.data);
 
+    // Fetch user data from Discord API
     const userResponse = await axios.get('https://discord.com/api/users/@me', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
 
-    console.log('✅ User data from Discord API:', userResponse.data);
+    const userData = userResponse.data; // Store user data from Discord API
+    console.log('✅ User data:', userData);
 
-    processedCodes.add(code); // Mark code as used
-    res.json(userResponse.data);
+    // Check if the user exists in the database
+    let user = await User.findOne({ discord_id: userData.id });
+
+    if (!user) {
+      // If the user does not exist, create a new one
+      user = new User({
+        discord_id: userData.id,
+        username: userData.username,
+        avatar: userData.avatar,
+        gear_score: 0, // Default values
+        primary_weapon: 'Fist',
+        secondary_weapon: 'Fist',
+        is_admin: false, // Set admin manually if needed
+      });
+
+      await user.save();
+      console.log('✅ New user created:', user);
+    } else {
+      console.log('✅ User exists:', user);
+    }
+
+    // Redirect the user to a frontend page (e.g., menu) after successful authentication
+    res.redirect(`/menu?user=${encodeURIComponent(JSON.stringify(userData))}`);
   } catch (error) {
     console.error('❌ Error processing authorization code:', error.response?.data || error.message);
     res.status(500).json({ error: 'Failed to authenticate' });
@@ -276,5 +365,5 @@ app.delete('/delete-scheduled-event/:eventId', async (req, res) => {
 
 // Start the server
 app.listen(3001, () => {
-  console.log('🚀 Server running on http://localhost:3001');
+  console.log('🚀 Server running on http://164.92.101.175:3001');
 });

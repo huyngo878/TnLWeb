@@ -3,22 +3,26 @@ import { UserContext } from '../context/UserContext';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Layout = ({ children }) => {
-  const { user } = useContext(UserContext); // Get the user context
-  const [isAdmin, setIsAdmin] = useState(false); // Track if the user is an admin
-  const navigate = useNavigate(); // To programmatically navigate back to the menu
+  const { user } = useContext(UserContext);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate();
+
+  // Add a console log to inspect the user object
+  console.log('Layout.js user:', user);
 
   // Check if the user is an admin
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const response = await fetch('http://localhost:3001/check-admin', {
+        const API_URL = 'http://164.92.101.175:3001';
+        const response = await fetch(`${API_URL}/check-admin`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: user?.id }),
         });
 
         const data = await response.json();
-        setIsAdmin(data.isAdmin); // Set admin status
+        setIsAdmin(data.isAdmin);
       } catch (error) {
         console.error('Error checking admin status:', error);
       }
@@ -30,30 +34,36 @@ const Layout = ({ children }) => {
   }, [user]);
 
   const handleGoBack = () => {
-    navigate('/menu'); // Redirect to the Menu page
+    navigate('/menu');
   };
 
   return (
     <div className="flex flex-col h-screen bg-gray4 text-white">
-  {/* Navigation Bar */}
-  <header className="bg-gray3 p-4">
-    <nav className="flex justify-between items-center">
-      {/* Left Section */}
-      <div className="flex items-center gap-4">
-        {user?.avatar && (
-          <Link to="/username" className="flex items-center gap-2 hover:underline">
-            <img
-              src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
-              alt="Profile"
-              className="w-8 h-8 rounded-full"
-            />
-            <span>{user?.username || 'Guest'}</span>
-          </Link>
-        )}
-      </div>
+      {/* Navigation Bar */}
+      <header className="bg-gray3 p-4">
+        <nav className="flex justify-between items-center">
+          {/* Left Section */}
+          <div className="flex items-center gap-4">
+            {user && user.username && (
+              <Link to="/username" className="flex items-center gap-2 hover:underline">
+                {user.avatar ? (
+                  <img
+                    src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center">
+                    {user.username.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span>{user.username}</span>
+              </Link>
+            )}
+          </div>
 
-      {/* Center Section: Links */}
-      <div className="flex gap-8">
+           {/* Center Section: Links */}
+        <div className="flex gap-8">
         <Link to="/schedule" className="hover:underline text-white">Schedule</Link>
         <Link to="/form" className="hover:underline text-white">Form</Link>
         <Link to="/rules" className="hover:underline text-white">Rules</Link>
@@ -74,18 +84,17 @@ const Layout = ({ children }) => {
       >
         Back to Menu
       </button>
-    </nav>
-  </header>
+        </nav>
+      </header>
 
-  {/* Main Content */}
-  <main className="flex-grow">{children}</main>
+      {/* Main Content */}
+      <main className="flex-grow">{children}</main>
 
-  {/* Footer */}
-  <footer className="bg-gray3 p-4 text-center text-gray6">
-    Made by korgie
-  </footer>
-</div>
-
+      {/* Footer */}
+      <footer className="bg-gray3 p-4 text-center text-gray6">
+        Made by korgie
+      </footer>
+    </div>
   );
 };
 

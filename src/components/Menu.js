@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import Layout from './Layout'; // Import Layout for consistent navbar and footer
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css'; // Import calendar styles
 import { UserContext } from '../context/UserContext'; // Import UserContext
-import '../App.css'; // If using App.css
+import '../App.css'; // Optional CSS for styling
 
 const localizer = momentLocalizer(moment);
 
 const Menu = () => {
-  const { user } = useContext(UserContext); // Get the logged-in user
+  const { user, updateUser } = useContext(UserContext); // Get the logged-in user from context
   const [events, setEvents] = useState([]); // Store events for the calendar
   const [formSelections, setFormSelections] = useState({
     boss1: '',
@@ -23,7 +23,7 @@ const Menu = () => {
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
-        const response = await fetch('http://localhost:3001/get-schedule'); // Backend API for getting scheduled events
+        const response = await fetch('http://164.92.101.175:3001/get-schedule'); // Backend API for getting scheduled events
         if (response.ok) {
           const data = await response.json();
 
@@ -48,14 +48,35 @@ const Menu = () => {
     fetchSchedule();
   }, []);
 
+  // Extract user data from the URL (if exists) and update context/localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const userParam = params.get('user');
+    if (userParam) {
+      try {
+        const parsedUser = JSON.parse(decodeURIComponent(userParam));
+        console.log('Decoded user data from URL:', parsedUser);
+
+        // Update user context and localStorage
+        updateUser(parsedUser);
+        localStorage.setItem('user', JSON.stringify(parsedUser));
+
+        // Remove user data from URL
+        window.history.replaceState({}, document.title, '/menu');
+      } catch (error) {
+        console.error('Error parsing user data from URL:', error);
+      }
+    }
+  }, [updateUser]);
+
   // Fetch user's form selections
   useEffect(() => {
     const fetchFormData = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/forms/${user.username}`);
+        const response = await fetch(`http://164.92.101.175:3001/forms/${user?.username}`);
         if (response.ok) {
           const data = await response.json();
-          console.log('Fetched form data:', data);  // Log the data for debugging
+          console.log('Fetched form data:', data);
           setFormSelections({
             boss1: data.boss1 || 'N/A',
             gear1: data.gear1 || 'N/A',

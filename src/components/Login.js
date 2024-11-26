@@ -1,7 +1,7 @@
 import React from 'react';
 
 const CLIENT_ID = "1307716735603966064";
-const REDIRECT_URI = "http://localhost:3000/callback"; // Change this to your redirect URI
+const REDIRECT_URI = "http://164.92.101.175/callback"; // Change this to your redirect URI
 
 const Login = () => {
   const handleLogin = () => {

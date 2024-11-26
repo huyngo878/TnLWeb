@@ -1,8 +1,10 @@
+import React, { useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import React, { useEffect } from 'react';
+import { UserContext } from '../context/UserContext';
 
 const Callback = () => {
   const navigate = useNavigate();
+  const { updateUser } = useContext(UserContext);
 
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get('code');
@@ -16,7 +18,7 @@ const Callback = () => {
     }
 
     // Send the authorization code to the backend
-    fetch('http://localhost:3001/callback', {
+    fetch('https://164.92.101.175/callback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ code }),
@@ -31,8 +33,14 @@ const Callback = () => {
           return;
         }
 
-        // Save user data in localStorage and navigate to Menu
-        localStorage.setItem('user', JSON.stringify(data));
+        // Update user data in context and localStorage
+        console.log('Calling updateUser with data:', data); // Add this line
+        updateUser(data);
+
+        // Remove the 'code' parameter from the URL
+        window.history.replaceState({}, document.title, '/menu');
+
+        // Navigate to the Menu page
         navigate('/menu');
       })
       .catch((err) => {
@@ -40,7 +48,7 @@ const Callback = () => {
         alert('Failed to log in. Try again.');
         navigate('/');
       });
-  }, [navigate]);
+  }, [navigate, updateUser]);
 
   return (
     <div className="h-screen flex items-center justify-center bg-gray-800 text-white">

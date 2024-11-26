@@ -18,7 +18,7 @@ const Schedule = () => {
   useEffect(() => {
     const fetchSchedule = async () => {
       try {
-        const response = await fetch('http://localhost:3001/get-schedule'); // Update this URL based on your backend
+        const response = await fetch('http://164.92.101.175:3001/get-schedule'); // Update this URL based on your backend
         const data = await response.json();
 
         // Format backend data into calendar event format

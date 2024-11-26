@@ -20,7 +20,7 @@ const Callback = () => {
 
     if (code) {
       // Send the code to your backend server
-      fetch('http://localhost:3001/callback', {
+      fetch('http://164.92.101.175:3001/callback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

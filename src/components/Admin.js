@@ -35,7 +35,7 @@ const Admin = () => {
         });
     
         try {
-            const response = await fetch('http://localhost:3001/add-boss-schedule', {
+            const response = await fetch('http://164.92.101.175:3001/add-boss-schedule', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -84,7 +84,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        const response = await fetch('http://localhost:3001/admin-responses'); // Backend API
+        const response = await fetch('http://164.92.101.175:3001/admin-responses'); // Backend API
         const data = await response.json();
         setSubmissions(data);
         setFilteredSubmissions(data); // Initially show all submissions
@@ -95,7 +95,7 @@ const Admin = () => {
 
     const fetchBossStatistics = async () => {
       try {
-        const response = await fetch('http://localhost:3001/admin-boss-statistics'); // Fetch aggregated statistics
+        const response = await fetch('http://164.92.101.175:3001/admin-boss-statistics'); // Fetch aggregated statistics
         const data = await response.json();
         setBossStatistics(data); // Set the statistics for display
       } catch (error) {
@@ -112,7 +112,7 @@ const Admin = () => {
           return;
         }
 
-        const response = await fetch('http://localhost:3001/check-admin', {
+        const response = await fetch('http://164.92.101.175:3001/check-admin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: user.id }), // Send user ID

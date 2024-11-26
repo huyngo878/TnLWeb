@@ -192,7 +192,7 @@ const Form = () => {
 
     try {
       // Send data to backend
-      const response = await fetch('http://localhost:3001/submit-form', {
+      const response = await fetch('http://164.92.101.175:3001/submit-form', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
